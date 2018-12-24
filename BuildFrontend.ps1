@@ -12,8 +12,9 @@ mv src $srcPath
 docker run --rm -v "$($frontendPath):/var/frontend" -v "$($srcPath):/var/src" g3rv4/traducir-builder /bin/bash -c "cd /var/src/Traducir.Web && \
 cp -r /var/node_modules node_modules && \
 npm run build && \
-cp -r ./dist/* /var/frontend/"
+cp -r ./dist/* /var/frontend/" 2>&1
+if($LASTEXITCODE){
+    Exit $LASTEXITCODE
+}
 
 mv $frontendPath app
-
-Exit $LASTEXITCODE

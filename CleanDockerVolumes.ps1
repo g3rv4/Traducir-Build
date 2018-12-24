@@ -5,5 +5,3 @@ ls $dockerVolumesPath
 
 rm -rf ("$($dockerVolumesPath)/*")
 ls $dockerVolumesPath
-
-Exit $LASTEXITCODE
