@@ -15,6 +15,19 @@ if($LASTEXITCODE){
     Exit $LASTEXITCODE
 }
 
+# Give it 5 seconds for it to start
+Start-Sleep -s 5
+
+# Run migrations
+$instanceNames = (Get-ChildItem Env:INSTANCE_NAMES).Value
+foreach ($instanceName in $instanceNames.Split(',')){
+    Write-Output "Running migrations on $instanceName"
+    docker exec $instanceName curl -f -i http://localhost:5000/app/api/admin/migrate 2>&1
+    if($LASTEXITCODE){
+        Exit $LASTEXITCODE
+    }
+}
+
 # Clear the cache
 $cfEmail = (Get-ChildItem Env:CF_EMAIL).Value
 $cfApiKey = (Get-ChildItem Env:CF_API_KEY).Value
