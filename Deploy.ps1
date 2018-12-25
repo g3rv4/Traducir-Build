@@ -19,8 +19,8 @@ if($LASTEXITCODE){
 Start-Sleep -s 5
 
 # Run migrations
-$instanceNames = (Get-ChildItem Env:INSTANCE_NAMES).Value
-foreach ($instanceName in $instanceNames.Split(',')){
+$instanceNames = (Get-ChildItem Env:INSTANCE_NAMES).Value.Split(',')
+foreach ($instanceName in $instanceNames){
     Write-Output "Running migrations on $instanceName"
     docker exec $instanceName curl -f -i http://localhost:5000/app/api/admin/migrate 2>&1
     if($LASTEXITCODE){
@@ -44,3 +44,10 @@ $body = @{
 } | ConvertTo-Json
 
 Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/zones/$($cfZone)/purge_cache" -Method 'DELETE' -Headers $headers -Body $body
+
+if ($instanceNames.Count -gt 1) {
+    docker-compose --no-ansi -f /var/docker-deploy/nginx/docker-compose.yml restart 2>&1
+    if($LASTEXITCODE){
+        Exit $LASTEXITCODE
+    }
+}
