@@ -28,3 +28,20 @@ foreach ($db in $dbs){
 
     rm "$filenameWithPath.tgz"
 }
+
+# Clear the cache (so that the new files are visible)
+$cfEmail = (Get-ChildItem Env:CF_EMAIL).Value
+$cfApiKey = (Get-ChildItem Env:CF_API_KEY).Value
+$cfZone = (Get-ChildItem Env:CF_ZONE).Value
+
+$headers = @{
+    "X-Auth-Email"=$cfEmail;
+    "X-Auth-Key"=$cfApiKey;
+    "Content-Type"="application/json"
+}
+
+$body = @{
+    files = @('https://db-backups.traducir.win/')
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/zones/$($cfZone)/purge_cache" -Method 'POST' -Headers $headers -Body $body
