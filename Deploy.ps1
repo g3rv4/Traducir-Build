@@ -14,6 +14,11 @@ $content = Get-Content app/frontend/index.html
 $content = $content.Replace('src="/', "src=""https://$staticHost/").Replace('href="/', "href=""https://$staticHost/")
 $content > app/frontend/index.html
 
+# replace the link on miniprofiler
+$content = Get-Content app/frontend/lib/miniprofiler.js
+$content = $content.Replace("'+t.options.path+""includes.min.css?v=""+t.options.version+'", "https://$staticHost/lib/miniprofiler-includes.'+t.options.version.replace('+','.')+'.css")
+$content > app/frontend/lib/miniprofiler.js
+
 # replace the frontend
 rm -rf $frontendFolder
 cp -r app/frontend $frontendFolder
