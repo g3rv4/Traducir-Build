@@ -1,20 +1,24 @@
 Set-PSDebug -Trace 1
 
-$dockerPath = $env:DOCKER_PATH
-$dockerNginxPath = $env:DOCKER_NGINX_PATH
-$instanceNames = $env:DOCKER_INSTANCE_NAMES.Split(',')
+$dockerAppPath = $env:DOCKER_APPPATH
+$dockerNginxPath = $env:DOCKER_NGINXPATH
+$staticFilesPath = $env:STATIC_FILESPATH
+$instanceNames = $env:DOCKER_INSTANCENAMES.Split(',')
 
 $appPath = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)/App/Traducir.$($env:RELEASE_ARTIFACTS_APP_BUILDNUMBER)"
 
-docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" stop
+docker-compose --no-ansi -f "$($dockerAppPath)/docker-compose.yml" stop
 if ($LASTEXITCODE) {
     Exit $LASTEXITCODE
 }
 
-rm -rf "$($dockerPath)/volumes/app"
-mv $appPath "$($dockerPath)/volumes/app"
+rm -rf "$($dockerAppPath)/volumes/app"
+mv $appPath "$($dockerAppPath)/volumes/app"
 
-docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" up -d
+rm -rf "$($staticFilesPath)"
+mv "$($dockerAppPath)/volumes/app/wwwroot" $staticFilesPath
+
+docker-compose --no-ansi -f "$($dockerAppPath)/docker-compose.yml" up -d
 if ($LASTEXITCODE) {
     Exit $LASTEXITCODE
 }
