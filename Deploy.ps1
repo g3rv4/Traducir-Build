@@ -1,33 +1,18 @@
 Set-PSDebug -Trace 1
 
-$backendFolder = Join-Path '/var/docker-deploy' (Get-ChildItem Env:DOCKER_DEPLOY_FOLDER).Value
-$frontendFolder = Join-Path '/var/docker-deploy/nginx/volumes/html' (Get-ChildItem Env:DOCKER_DEPLOY_FRONTEND_FOLDER).Value
-$staticHost = (Get-ChildItem Env:STATIC_HOST).Value
+$dockerPath = $env:DOCKER_PATH
+$dockerNginxPath = $env:DOCKER_NGINX_PATH
+$instanceNames = $env:DOCKER_INSTANCE_NAMES.Split(',')
 
-docker-compose --no-ansi -f "$($backendFolder)/docker-compose.yml" stop 2>&1
+docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" stop 2>&1
 if ($LASTEXITCODE) {
     Exit $LASTEXITCODE
 }
 
-# have the links on index.html link to the static host instead of using relative urls (so that we can leverage CF)
-$content = Get-Content app/frontend/index.html
-$content = $content.Replace('src="/', "src=""https://$staticHost/").Replace('href="/', "href=""https://$staticHost/")
-$content > app/frontend/index.html
+rm -rf "$($dockerPath)/volumes/app"
+mv app "$($dockerPath)/volumes"
 
-# replace the link on miniprofiler
-$content = Get-Content app/frontend/lib/miniprofiler.js
-$content = $content.Replace("'+t.options.path+""includes.min.css?v=""+t.options.version+'", "https://$staticHost/lib/miniprofiler-includes.'+t.options.version.replace('+','.')+'.css")
-$content > app/frontend/lib/miniprofiler.js
-
-# replace the frontend
-rm -rf $frontendFolder
-cp -r app/frontend $frontendFolder
-
-# replace the backend
-rm -rf "$($backendFolder)/volumes/app"
-mv app "$($backendFolder)/volumes"
-
-docker-compose --no-ansi -f "$($backendFolder)/docker-compose.yml" up -d 2>&1
+docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" up -d 2>&1
 if ($LASTEXITCODE) {
     Exit $LASTEXITCODE
 }
@@ -36,7 +21,6 @@ if ($LASTEXITCODE) {
 Start-Sleep -s 5
 
 # Run migrations
-$instanceNames = (Get-ChildItem Env:INSTANCE_NAMES).Value.Split(',')
 foreach ($instanceName in $instanceNames) {
     Write-Output "Running migrations on $instanceName"
     docker exec $instanceName curl -f -i http://localhost:5000/app/api/admin/migrate 2>&1
@@ -45,9 +29,9 @@ foreach ($instanceName in $instanceNames) {
     }
 }
 
-# when messing with multiple containers, nginx may get confused... restarting it clears it up
+# when messing with multiple containers, nginx gets confused... restarting it clears it up
 if ($instanceNames.Count -gt 1) {
-    docker-compose --no-ansi -f /var/docker-deploy/nginx/docker-compose.yml restart 2>&1
+    docker-compose --no-ansi -f "$($dockerNginxPath)/docker-compose.yml" restart 2>&1
     if ($LASTEXITCODE) {
         Exit $LASTEXITCODE
     }
