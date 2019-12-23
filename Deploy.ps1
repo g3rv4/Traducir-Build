@@ -4,13 +4,15 @@ $dockerPath = $env:DOCKER_PATH
 $dockerNginxPath = $env:DOCKER_NGINX_PATH
 $instanceNames = $env:DOCKER_INSTANCE_NAMES.Split(',')
 
+$appPath = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)/App/Traducir.$($env:RELEASE_ARTIFACTS_APP_BUILDNUMBER)"
+
 docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" stop
 if ($LASTEXITCODE) {
     Exit $LASTEXITCODE
 }
 
 rm -rf "$($dockerPath)/volumes/app"
-mv app "$($dockerPath)/volumes"
+mv $appPath "$($dockerPath)/volumes/app"
 
 docker-compose --no-ansi -f "$($dockerPath)/docker-compose.yml" up -d
 if ($LASTEXITCODE) {
