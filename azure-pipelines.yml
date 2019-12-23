@@ -1,0 +1,28 @@
+trigger:
+- master
+pr: none
+
+resources:
+  repositories:
+    - repository: templates
+      endpoint: g3rv4
+      type: github
+      name: g3rv4/AzurePipelinesTemplates
+
+stages:
+- template: agent-provision.yml@templates
+- stage: Build
+  pool: default
+  jobs:
+  - job: DoBuild
+    workspace:
+      clean: all
+    steps:
+    - powershell: |
+        $hash = '$(Build.SourceVersion)'
+        $buildId = '$(Build.BuildId)'
+        $version = "$($hash.Substring(0, 7)).$buildId"
+        Write-Host "##vso[build.updatebuildnumber]$($version)"
+      name: SetVersion
+    - publish: '.'
+      artifact: 'Traducir-Scripts.$(Build.BuildNumber)'
