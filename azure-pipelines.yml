@@ -2,17 +2,10 @@ trigger:
 - master
 pr: none
 
-resources:
-  repositories:
-    - repository: templates
-      endpoint: g3rv4
-      type: github
-      name: g3rv4/AzurePipelinesTemplates
-
 stages:
-- template: agent-provision.yml@templates
 - stage: Build
-  pool: default
+  pool:
+    vmImage: ubuntu-18.04
   jobs:
   - job: DoBuild
     workspace:
