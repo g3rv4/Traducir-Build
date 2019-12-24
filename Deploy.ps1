@@ -16,7 +16,7 @@ rm -rf "$($dockerAppPath)/volumes/app"
 mv $appPath "$($dockerAppPath)/volumes/app"
 
 rm -rf "$($staticFilesPath)"
-mv "$($dockerAppPath)/volumes/app/wwwroot" $staticFilesPath
+cp -r "$($dockerAppPath)/volumes/app/wwwroot" $staticFilesPath
 
 docker-compose --no-ansi -f "$($dockerAppPath)/docker-compose.yml" up -d
 if ($LASTEXITCODE) {
