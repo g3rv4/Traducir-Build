@@ -3,9 +3,10 @@ Set-PSDebug -Trace 1
 $dockerAppPath = $env:DOCKER_APPPATH
 $dockerNginxPath = $env:DOCKER_NGINXPATH
 $staticFilesPath = $env:STATIC_FILESPATH
+$artifact = $env:DEPLOY_ARTIFACT
 $instanceNames = $env:DOCKER_INSTANCENAMES.Split(',')
 
-$appPath = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)/App/Traducir.$($env:RELEASE_ARTIFACTS_APP_BUILDNUMBER)"
+$appPath = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)/App/$($artifact).$($env:RELEASE_ARTIFACTS_APP_BUILDNUMBER)"
 
 docker-compose --no-ansi -f "$($dockerAppPath)/docker-compose.yml" stop
 if ($LASTEXITCODE) {
