@@ -30,7 +30,7 @@ Start-Sleep -s 5
 # Run migrations
 foreach ($instanceName in $instanceNames) {
     Write-Output "Running migrations on $instanceName"
-    docker exec $instanceName wget http://localhost:5000/admin/migrate
+    docker exec $instanceName wget http://localhost:5000/admin/migrate -O -
     if ($LASTEXITCODE) {
         Exit $LASTEXITCODE
     }
